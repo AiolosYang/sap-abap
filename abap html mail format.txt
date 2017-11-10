@@ -1,0 +1,82 @@
+﻿*&---------------------------------------------------------------------*
+*& Report  ZAIOLOS_SEND_HTML_MAIL
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT zaiolos_send_html_mail.
+
+define style.
+  append '<style>' to lt_mailtxt.
+  append '.table-c table{border-right:1px solid #F00;border-bottom:1px solid #F00}' to lt_mailtxt.
+  append '.table-c table td{border-left:1px solid #F00;border-top:1px solid #F00}' to lt_mailtxt.
+  append '</style>' to lt_mailtxt.
+END-OF-DEFINITION.
+
+DEFINE table_head.
+  append '<div class="table-c"><table width="400" border="0" cellspacing="0" cellpadding="0">' to lt_mailtxt.
+END-OF-DEFINITION.
+
+DEFINE table_foot.
+  append '</table></div>' to lt_mailtxt.
+END-OF-DEFINITION.
+
+DEFINE table_line.
+  append &1 to lt_mailtxt.
+END-OF-DEFINITION.
+* Data Declarations
+DATA: lt_mailsubject     TYPE sodocchgi1.
+DATA: lt_mailrecipients  TYPE STANDARD TABLE OF somlrec90 WITH HEADER LINE.
+DATA: lt_mailtxt         TYPE STANDARD TABLE OF soli      WITH HEADER LINE.
+* Recipients
+lt_mailrecipients-rec_type  = 'U'.
+lt_mailrecipients-receiver = 'aiolos-julei.yang@cn.abb.com'.
+APPEND lt_mailrecipients .
+CLEAR lt_mailrecipients .
+* Subject.
+lt_mailsubject-obj_name = 'TEST'.
+lt_mailsubject-obj_langu = sy-langu.
+lt_mailsubject-obj_descr = 'Email Subject Goes Here'.
+* Mail Contents
+style.
+lt_mailtxt = 'This is a test mail'.
+lt_mailtxt = '<HTML><BODY><H1>This is a test</H1></BODY></HTML>'.
+APPEND lt_mailtxt. CLEAR lt_mailtxt.
+
+table_head.
+table_line '<tr><th>Month</th><th>Savings</th></tr><tr><td>January</td><td>$100</td></tr>'.
+table_foot.
+
+* Send Mail
+* Calls the SO_NEW_DOCUMENT_SEND_API1 function.
+* Always use SAP functions instead of creating your own.
+CALL FUNCTION 'SO_NEW_DOCUMENT_SEND_API1'
+  EXPORTING
+    document_data              = lt_mailsubject
+    document_type              = 'HTM'
+  TABLES
+    object_content             = lt_mailtxt
+    receivers                  = lt_mailrecipients
+  EXCEPTIONS
+    too_many_receivers         = 1
+    document_not_sent          = 2
+    document_type_not_exist    = 3
+    operation_no_authorization = 4
+    parameter_error            = 5
+    x_error                    = 6
+    enqueue_error              = 7
+    OTHERS                     = 8.
+IF sy-subrc EQ 0.
+  COMMIT WORK.
+*   Push mail out from SAP outbox
+  SUBMIT rsconn01 WITH mode = 'INT' AND RETURN.
+
+  WRITE: / 'Success, go check your inbox'.
+ELSE.
+  WRITE: / 'There was a problem:', sy-subrc.
+ENDIF.
+
+" I always add a line like this so that you can at least see your program ran.
+WRITE: / 'program is all done'. 
