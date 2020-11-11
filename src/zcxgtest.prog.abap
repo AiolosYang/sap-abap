@@ -4,7 +4,7 @@
 *&
 *&---------------------------------------------------------------------*
 REPORT zcxgtest.
-*** 字母到对应的ASCII码
+*** 字母到对应的ASCII码 -- 我改个注释看看 by yangjulei
 DATA : c.
 FIELD-SYMBOLS : <n> TYPE x.
 DATA : rn TYPE i.
