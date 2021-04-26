@@ -4,7 +4,7 @@
 *&
 *&---------------------------------------------------------------------*
 REPORT zcxgtest.
-*** 字母到对应的ASCII码 -- 我改个注释看看 by yangjulei
+*** 字母到对应的ASCII码 -- 我改个注释看看 by yangjulei 22 
 DATA : c.
 FIELD-SYMBOLS : <n> TYPE x.
 DATA : rn TYPE i.
